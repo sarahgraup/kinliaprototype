@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils/cn";
 
 interface EventCardProps {
   event: Event;
+  variant?: "compact" | "rectangular";
   isSaved?: boolean;
   savedCollections?: Collection[];
   onSave: (event: Event, buttonElement: HTMLElement) => void;
@@ -25,6 +26,7 @@ interface EventCardProps {
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
+  variant = "compact",
   isSaved = false,
   savedCollections = [],
   onSave,
@@ -44,6 +46,129 @@ export const EventCard: React.FC<EventCardProps> = ({
     return "All Saves";
   };
 
+  // Rectangular variant - horizontal layout
+  if (variant === "rectangular") {
+    return (
+      <div
+        className="bg-white rounded-xl border border-gray-300 overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:border-gray-400 group"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={onClick}
+      >
+        <div className="flex flex-col md:flex-row">
+          {/* Image - 40% width on desktop */}
+          <div className="relative h-48 md:h-auto md:w-2/5 overflow-hidden">
+            <img
+              src={event.image}
+              alt={event.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+
+            {/* Save Button - Top right on image */}
+            <div className="absolute top-3 right-3">
+              {!isHovered ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className="bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-colors"
+                  aria-label="Save options"
+                >
+                  <Bookmark
+                    className={`w-5 h-5 ${isSaved ? "fill-current" : ""}`}
+                  />
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isSaved) {
+                      onQuickSave?.(event);
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg shadow-lg transition-colors flex items-center gap-2 ${
+                    isSaved
+                      ? "bg-gray-600 text-white cursor-default"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
+                  aria-label={isSaved ? "Already saved" : "Quick save"}
+                >
+                  <Bookmark
+                    className={`w-4 h-4 ${isSaved ? "fill-current" : ""}`}
+                  />
+                  <span className="text-sm font-medium">
+                    {isSaved ? "Saved" : "Save"}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Content - 60% width on desktop */}
+          <div className="flex-1 p-5 md:p-6">
+            <h3 className="font-bold text-xl mb-3 line-clamp-2">
+              {event.name}
+            </h3>
+
+            <div className="space-y-2 text-sm text-gray-600 mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  {event.date} • {event.time}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{event.location}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 flex-shrink-0" />
+                <span>{formatAttendees(event.attendees)} attending</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-2xl font-bold text-indigo-600">
+                {formatPrice(event.price)}
+              </span>
+              {event.friendsAttending && event.friendsAttending.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {event.friendsAttending.slice(0, 3).map((friend) => (
+                      <img
+                        key={friend.id}
+                        src={friend.avatar}
+                        alt={friend.name}
+                        className="w-7 h-7 rounded-full border-2 border-white"
+                        title={friend.name}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {event.friendsAttending.length} friend
+                    {event.friendsAttending.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {event.category.slice(0, 4).map((cat) => (
+                <span
+                  key={cat}
+                  className="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600 font-medium"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Compact variant - original masonry style
   return (
     <div
       className="bg-white rounded-xl border border-gray-300 overflow-hidden cursor-pointer transition-all hover:border-gray-400 group"

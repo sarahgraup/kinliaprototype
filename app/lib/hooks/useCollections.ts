@@ -100,6 +100,119 @@ export function useCollections() {
     }
   };
 
+  const toggleCollectionPrivacy = async (collectionId: string) => {
+    try {
+      const collection = collections.find((c) => c.id === collectionId);
+      if (!collection) throw new Error("Collection not found");
+
+      const response = await collectionsApi.update(collectionId, {
+        isPublic: !collection.isPublic,
+      });
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to toggle collection privacy"
+      );
+      throw err;
+    }
+  };
+
+  const addCollaborator = async (collectionId: string, userId: string) => {
+    try {
+      const response = await collectionsApi.addCollaborator(
+        collectionId,
+        userId
+      );
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to add collaborator"
+      );
+      throw err;
+    }
+  };
+
+  const removeCollaborator = async (collectionId: string, userId: string) => {
+    try {
+      const response = await collectionsApi.removeCollaborator(
+        collectionId,
+        userId
+      );
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to remove collaborator"
+      );
+      throw err;
+    }
+  };
+
+  const likeCollection = async (collectionId: string) => {
+    try {
+      const response = await collectionsApi.like(collectionId);
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to like collection"
+      );
+      throw err;
+    }
+  };
+
+  const unlikeCollection = async (collectionId: string) => {
+    try {
+      const response = await collectionsApi.unlike(collectionId);
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to unlike collection"
+      );
+      throw err;
+    }
+  };
+
+  const addComment = async (collectionId: string, content: string) => {
+    try {
+      const response = await collectionsApi.addComment(collectionId, content);
+      setCollections(
+        collections.map((c) => (c.id === collectionId ? response.data : c))
+      );
+      return response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add comment");
+      throw err;
+    }
+  };
+
+  const shareCollection = async (collectionId: string) => {
+    try {
+      const response = await collectionsApi.share(collectionId);
+      return response.data.shareLink;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to share collection"
+      );
+      throw err;
+    }
+  };
+
   return {
     collections,
     loading,
@@ -109,6 +222,13 @@ export function useCollections() {
     deleteCollection,
     addEventToCollection,
     removeEventFromCollection,
+    toggleCollectionPrivacy,
+    addCollaborator,
+    removeCollaborator,
+    likeCollection,
+    unlikeCollection,
+    addComment,
+    shareCollection,
     refetch: loadCollections,
   };
 }

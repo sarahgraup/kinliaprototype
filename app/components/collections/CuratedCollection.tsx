@@ -18,6 +18,7 @@ export const CuratedCollection: React.FC<CuratedCollectionProps> = ({
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {mockCuratedCollections.map((collection) => (
           <CollectionCard
+            variant="curated"
             key={collection.id}
             collection={collection}
             onClick={() => onCollectionClick(collection.id)}

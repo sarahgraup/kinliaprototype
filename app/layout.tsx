@@ -21,15 +21,11 @@ export default function RootLayout({
   const { chats } = useChats();
   const [showChatSidebar, setShowChatSidebar] = useState(false);
 
-  console.log("🔵 Layout - Chat Sidebar State:", showChatSidebar);
-  console.log("🔵 Layout - Current Path:", pathname);
-  console.log("🔵 Layout - Chats Count:", chats.length);
 
   const handleChatsClick = () => {
-    console.log("🟢 Header Chats Button Clicked!");
-    console.log("🟢 Previous State:", showChatSidebar);
+
     setShowChatSidebar(!showChatSidebar);
-    console.log("🟢 New State Should Be:", !showChatSidebar);
+
   };
 
   return (
@@ -44,15 +40,15 @@ export default function RootLayout({
           isOpen={showChatSidebar}
           chats={chats}
           onClose={() => {
-            console.log("🔴 Closing Chat Sidebar");
+
             setShowChatSidebar(false);
           }}
           onSelectChat={(id) => {
-            console.log("💬 Chat Selected:", id);
+
             router.push(`/search?chatId=${id}`);
           }}
           onNewChat={() => {
-            console.log("✨ New Chat Clicked");
+
             router.push("/search");
           }}
         />

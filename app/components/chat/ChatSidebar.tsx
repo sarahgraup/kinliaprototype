@@ -23,14 +23,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onSelectChat,
   onNewChat,
 }) => {
-  console.log("🟣 ChatSidebar Rendering - isOpen:", isOpen);
-  console.log("🟣 ChatSidebar - Total Chats:", chats.length);
 
-  if (isOpen) {
-    console.log("🟢 Sidebar IS OPEN - translate-x-0");
-  } else {
-    console.log("🔴 Sidebar IS CLOSED - translate-x-full");
-  }
+
+
 
   const groupedChats = chats.reduce((acc, chat) => {
     const date = new Date(chat.date);
@@ -50,7 +45,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <div
           className="fixed inset-0 bg-black/30 z-40 transition-opacity duration-300 animate-fade-in"
           onClick={() => {
-            console.log("🌑 Backdrop Clicked - Closing Sidebar");
+
             onClose();
           }}
         />

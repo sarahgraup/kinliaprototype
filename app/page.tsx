@@ -5,7 +5,11 @@ import React, { useState, useEffect } from "react";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { StickySearch } from "@/components/layout/StickySearch";
 import { SearchBar } from "@/components/search/SearchBar";
+import { SectionContainer } from "@/components/layout/SectionContainer";
+import { HorizontalScrollGrid } from "@/components/layout/HorizontalScrollGrid";
 import { CuratedCollection } from "@/components/collections/CuratedCollection";
+import { CollectionCard } from "@/components/collections/CollectionCard";
+import { CrewCard } from "@/components/crews/CrewCard";
 import { EventGrid } from "@/components/events/EventGrid";
 import { CreateCollectionModal } from "@/components/collections/CreateCollectionModal";
 import { SaveDropdown } from "@/components/collections/SaveDropdown";
@@ -13,6 +17,8 @@ import { SayMoreModal } from "@/components/modals/SayMoreModal";
 import { Toast } from "@/components/ui/Toast";
 import { useEvents } from "@/lib/hooks/useEvents";
 import { useCollections } from "@/lib/hooks/useCollections";
+import { useCrews } from "@/lib/hooks/useCrews";
+import { mockUserCollections } from "@/data/mockCollections";
 import { Event } from "@/types";
 import { useRouter } from "next/navigation";
 
@@ -21,6 +27,22 @@ export default function HomePage() {
   const { events, loading: eventsLoading } = useEvents();
   const { collections, addEventToCollection, createCollection } =
     useCollections();
+  const { crews, joinCrew } = useCrews();
+
+  // Filter crews for homepage (open and almost-full only, limit to 8)
+  const homepageCrews = React.useMemo(() => {
+    return crews
+      .filter((crew) => crew.status === "open" || crew.status === "almost-full")
+      .slice(0, 8);
+  }, [crews]);
+
+  // Filter user collections for homepage (public only, limit to 8, sorted by recent)
+  const homepageCollections = React.useMemo(() => {
+    return mockUserCollections
+      .filter((collection) => collection.isPublic)
+      .sort((a, b) => b.likeCount - a.likeCount)
+      .slice(0, 8);
+  }, []);
 
   // Get all saved event IDs from all collections
   const savedEventIds = React.useMemo(() => {
@@ -168,19 +190,96 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Discovery Feed */}
-        <div className="max-w-8xl mx-auto px-6">
-          <EventGrid
-            events={events}
-            loading={eventsLoading}
-            savedEventIds={savedEventIds}
-            getEventCollections={getEventCollections}
-            onEventClick={handleEventClick}
-            onSaveEvent={handleSaveEvent}
-            onQuickSave={handleQuickSave}
-            onSayMore={handleSayMore}
-            onCollectionClick={handleCollectionClick}
-          />
+        {/* Crew Up Section */}
+        <div className="max-w-7xl mx-auto px-4">
+          <SectionContainer
+            title="Crew Up"
+            subtitle="Join groups heading to events you love"
+            viewMoreLink="/crews"
+            viewMoreText="View All Crews"
+          >
+            <HorizontalScrollGrid>
+              {homepageCrews.map((crew) => (
+                <CrewCard
+                  key={crew.id}
+                  crew={crew}
+                  variant="compact"
+                  onClick={() => router.push(`/crews/${crew.id}`)}
+                  onJoinCrew={async (crewId) => {
+                    // Mock current user - in real app would come from auth
+                    const mockUser = {
+                      userId: "currentUser",
+                      userName: "You",
+                      avatarUrl: "https://i.pravatar.cc/150?img=60",
+                      joinedAt: new Date(),
+                    };
+                    try {
+                      await joinCrew(crewId, mockUser);
+                      setToast({
+                        message: "Successfully joined crew!",
+                        type: "success",
+                      });
+                    } catch (error) {
+                      setToast({
+                        message: "Failed to join crew",
+                        type: "error",
+                      });
+                    }
+                  }}
+                />
+              ))}
+            </HorizontalScrollGrid>
+          </SectionContainer>
+        </div>
+
+        {/* Community Boards Section */}
+        <div className="max-w-7xl mx-auto px-4">
+          <SectionContainer
+            title="Community Boards"
+            subtitle="Discover collections from other users"
+            viewMoreLink="/boards"
+            viewMoreText="View All Boards"
+          >
+            <HorizontalScrollGrid>
+              {homepageCollections.map((collection) => (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  variant="compact"
+                  onClick={() => router.push(`/boards/${collection.id}`)}
+                  onLike={(collectionId) => {
+                    setToast({
+                      message: "Collection liked!",
+                      type: "success",
+                    });
+                  }}
+                  currentUserId="currentUser"
+                />
+              ))}
+            </HorizontalScrollGrid>
+          </SectionContainer>
+        </div>
+
+        {/* Discovery Feed - Limit to 16 events */}
+        <div className="max-w-7xl mx-auto px-4">
+          <SectionContainer
+            title="Discover Events"
+            subtitle="Personalized suggestions for you"
+            viewMoreLink="/discover"
+            viewMoreText="View All Events"
+          >
+            <EventGrid
+              events={events.slice(0, 16)}
+              loading={eventsLoading}
+              savedEventIds={savedEventIds}
+              getEventCollections={getEventCollections}
+              onEventClick={handleEventClick}
+              onSaveEvent={handleSaveEvent}
+              onQuickSave={handleQuickSave}
+              onSayMore={handleSayMore}
+              onCollectionClick={handleCollectionClick}
+            />
+          </SectionContainer>
         </div>
 
         {/* Sticky Search Bar */}
